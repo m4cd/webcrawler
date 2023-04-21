@@ -22,31 +22,48 @@ function getURLsFromHTML(htmlBody, baseURL){
             result.push(a.href)
         }
     }
-    console.log(result)
     return result
 }
 
-async function crawlPage(baseURL){
-    console.log(`Crawler starting at base url: ${baseURL}`)
+async function crawlPage(baseURL, currentURL, pages){
+    const baseURLObj = new URL(baseURL)
+    const currentURLObj = new URL(currentURL)
+
+    if (baseURLObj.hostname != currentURLObj.hostname) {
+        return pages
+    }
+
+    const currentURLNormalized = normalizedURL(currentURL)
+
+    if (pages[currentURLNormalized] > 0) {
+        pages[currentURLNormalized]++
+        return pages
+    }
+    
+    pages[currentURLNormalized] = 1
+
+    console.log(`Crawling: ${currentURL}`)
+    let html = ''
     try {
-        const response = await fetch(baseURL, {
-            method: "GET",
-            mode: "cors"
-        })
+        const response = await fetch(baseURL)
         if (response.status >= 400) {
             console.log(`HTTP error: ${response.status} - ${response.statusText}`)
+            return pages
         }
-        if (response.headers.get('content-type').slice(0, 9) !== "text/html") {
+        if (!response.headers.get('content-type').includes("ext/html")) {
             console.log(`Incorrent content type: ${response.headers.get('content-type')}`)
-        } else {
-            console.log(await response.text())
+            return pages
         }
+        html = await response.text()
     } catch(err) {
         console.log(err.message)
     }
+
+    for (let url of getURLsFromHTML(html, baseURL)) {
+        pages = await crawlPage(baseURL, url, pages)
+    }
     
-    //console.log(`status ${response.status} : ${response.statusText}`)
-    //console.log(response)
+    return pages
 }
 
 module.exports = {

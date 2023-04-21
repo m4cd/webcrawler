@@ -1,6 +1,7 @@
 const { crawlPage } = require('./crawl.js')
+const { printReport } = require('./report.js')
 
-function main(){
+async function main(){
     if (process.argv.length < 3) {
         console.log("No arguments.")
     } 
@@ -8,8 +9,9 @@ function main(){
         console.log("Too many arguments provided.")
     }
     else {
-        baseURL = process.argv[process.argv.length - 1]
-        crawlPage(baseURL)
+        baseURL = process.argv[2]
+        const pages = await crawlPage(baseURL, baseURL, {})
+        printReport(pages)
     }
 }
   
