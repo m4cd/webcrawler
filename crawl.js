@@ -26,7 +26,31 @@ function getURLsFromHTML(htmlBody, baseURL){
     return result
 }
 
+async function crawlPage(baseURL){
+    console.log(`Crawler starting at base url: ${baseURL}`)
+    try {
+        const response = await fetch(baseURL, {
+            method: "GET",
+            mode: "cors"
+        })
+        if (response.status >= 400) {
+            console.log(`HTTP error: ${response.status} - ${response.statusText}`)
+        }
+        if (response.headers.get('content-type').slice(0, 9) !== "text/html") {
+            console.log(`Incorrent content type: ${response.headers.get('content-type')}`)
+        } else {
+            console.log(await response.text())
+        }
+    } catch(err) {
+        console.log(err.message)
+    }
+    
+    //console.log(`status ${response.status} : ${response.statusText}`)
+    //console.log(response)
+}
+
 module.exports = {
     normalizedURL,
-    getURLsFromHTML
+    getURLsFromHTML,
+    crawlPage
 }
